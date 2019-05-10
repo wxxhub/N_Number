@@ -1,4 +1,4 @@
-#include "n_digital/node.h"
+#include "include/n_digital/node.h"
 
 using namespace std;
 
@@ -192,6 +192,16 @@ int Node::getG()
 int Node::getF()
 {
     return f_;
+}
+
+int Node::getId()
+{
+    return id_;
+}
+
+int Node::getLayer()
+{
+    return layer_;
 }
 
 std::vector<std::vector<int>> Node::getMap()

@@ -2,7 +2,7 @@
 #include <vector>
 #include <map>
 
-#include "n_digital/global_config.h"
+#include "include/n_digital/global_config.h"
 
 const int max_layer = 3;
 
@@ -37,6 +37,8 @@ public:
     int getH();
     int getG();
     int getF();
+    int getId();
+    int getLayer();
 
     std::vector<std::vector<int>> getMap();
 
