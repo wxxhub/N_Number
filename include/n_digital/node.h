@@ -4,7 +4,7 @@
 
 #include "include/n_digital/global_config.h"
 
-const int max_layer = 3;
+const int max_layer = 10;
 
 enum Direction
 {
@@ -31,8 +31,11 @@ class Node
 public:
     Node(const int layer, GlobalConfig *global_config, std::map<int, Node*> *open_set, std::vector<Node*> *close_table);
     ~Node();
+
     int process();
+
     void setMap(const int dimension, const std::vector<std::vector<int>> map, std::vector<std::vector<int>> *goal, Direction last_direction);
+    void setParentNode(Node* parent_node);
 
     int getH();
     int getG();
@@ -55,6 +58,8 @@ private:
     int layer_;
 
     int id_;
+
+    Node* parent_node_;
 
     Point *now_point_;
     Direction forbid_direction_;

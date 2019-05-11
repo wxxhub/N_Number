@@ -47,18 +47,23 @@ int NDigital::findNext()
     // process min_f node
     printf ("index: %d\n", index);
     int result = (*open_table_)[index]->process();
-
+    updateResult();
     return result;
-}
-
-void NDigital::setMap3(int origion[3][3], int goal[3][3])
-{
-    update(3, origion, goal);
 }
 
 void NDigital::setMap3(vector<vector<int>> origion, vector<vector<int>> goal)
 {
     update(3, origion, goal);
+}
+
+void NDigital::setMap4(vector<vector<int>> origion, vector<vector<int>> goal)
+{
+    update(4, origion, goal);
+}
+
+void NDigital::setMap5(vector<vector<int>> origion, vector<vector<int>> goal)
+{
+    update(5, origion, goal);
 }
 
 void NDigital::update(int dimension, int origion[3][3], int goal[3][3])
@@ -111,15 +116,69 @@ void NDigital::update(int dimension, vector<vector<int>> origion, vector<vector<
     root_node_->setMap(dimension_, origion_, &goal_, none_direction);
 }
 
+void NDigital::updateResult()
+{
+    // update open_table_tips
+    open_table_tips_.resize(open_table_->size());
+    vector<bool> if_set(open_table_->size(), false);
+    for (int i = 0; i < open_table_->size(); i++)
+    {
+        map<int, Node*>::iterator iter = open_table_->begin();
+        TableTips new_table_tips = {0, 0, 0};
+        int min_site = 0;
+        for (int j = 0; iter != open_table_->end(); iter++, j++)
+        {
+            if (if_set[j] == false)
+            {
+                if (new_table_tips.value == 0)
+                {
+                    new_table_tips.id = iter->second->getId();
+                    new_table_tips.layer = iter->second->getLayer();
+                    new_table_tips.value = iter->second->getF();
+                    min_site = j;
+                }
+                else if(new_table_tips.value >= iter->second->getF())
+                {
+                    new_table_tips.id = iter->second->getId();
+                    new_table_tips.layer = iter->second->getLayer();
+                    new_table_tips.value = iter->second->getF();
+                    min_site = j;
+                }
+            }
+        }
+
+        if_set[min_site] = true;
+        open_table_tips_[i] = new_table_tips;
+    }
+
+    // update close_table_tips
+    close_table_tips_.resize(close_table_->size());
+
+    for (int i = 0; i < close_table_->size(); i++)
+    {
+        close_table_tips_[i].id = (*close_table_)[i]->getId();
+        close_table_tips_[i].layer = (*close_table_)[i]->getLayer();
+        close_table_tips_[i].value = (*close_table_)[i]->getF();
+    }
+
+    // update
+    vector<vector<int>> min_open_map = (*open_table_)[open_table_tips_[0].id]->getMap();
+    min_open_map_.assign(min_open_map.begin(), min_open_map.end());
+}
+
 void NDigital::cleanr()
 {
-    // root_node_->cleanr();
-
     global_config_->reset();
 
     origion_.clear();
     goal_.clear();
     open_table_->clear();
+    close_table_->clear();
+
+    Node *delete_node = root_node_;
+    root_node_ = new Node(0, global_config_, open_table_, close_table_);
+    (*open_table_)[global_config_->getNowId()] = root_node_;
+    delete delete_node;
 }
 
 void NDigital::checkCloseTable()
@@ -130,30 +189,6 @@ void NDigital::checkCloseTable()
         root_node_->printMap((*close_table_)[i]->getMap());
     }
     printf ("############### end ###############\n");
-}
-
-void NDigital::getDefault3Map(int origion[3][3], int goal[3][3])
-{
-    int default_origion[3][3] = {
-        1, 2, 3,
-        4, 5, 0,
-        6, 8, 7,
-    };
-
-    int default_goal[3][3] = {
-        1, 2, 3,
-        6, 4, 5,
-        0, 8, 7,
-    };
-
-    for (int i = 0; i < 3; i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            origion[i][j] = default_origion[i][j];
-            goal[i][j]    =default_goal[i][j];
-        }
-    }
 }
 
 void NDigital::getDefault3Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
@@ -184,6 +219,68 @@ void NDigital::getDefault3Map(vector<vector<int>> &origion, vector<vector<int>> 
     }
 }
 
+void NDigital::getDefault4Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
+{
+    origion.resize(4);
+    goal.resize(4);
+    int default_origion[4][4] = {
+        0, 1, 3, 8,
+        4, 2, 5, 9,
+        6, 8, 7, 10,
+        11, 12, 13, 14,
+    };
+
+    int default_goal[4][4] = {
+        1, 2, 3, 8,
+        4, 5, 7, 9,
+        6, 12, 8, 10,
+        11, 13, 14, 0,
+    };
+
+    for (int i = 0; i < 4; i++)
+    {
+        origion[i].resize(4);
+        goal[i].resize(4);
+        for (int j = 0; j < 4; j++)
+        {
+            origion[i][j] = default_origion[i][j];
+            goal[i][j]    =default_goal[i][j];
+        }
+    }
+}
+
+void NDigital::getDefault5Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
+{
+    origion.resize(5);
+    goal.resize(5);
+    int default_origion[5][5] = {
+        1, 2, 3, 9, 10,
+        4, 5, 0, 11, 12,
+        6, 8, 7, 13, 14,
+        15, 16, 17, 18, 19,
+        20, 21, 22, 23, 24,
+    };
+
+    int default_goal[5][5] = {
+        1, 2, 3, 9, 10,
+        4, 5, 11, 13, 12,
+        6, 8, 7, 18, 14,
+        15, 16, 17, 23, 19,
+        20, 21, 22, 24, 25,
+    };
+
+    for (int i = 0; i < 5; i++)
+    {
+        origion[i].resize(5);
+        goal[i].resize(5);
+        for (int j = 0; j < 5; j++)
+        {
+            origion[i][j] = default_origion[i][j];
+            goal[i][j]    =default_goal[i][j];
+        }
+    }
+}
+
 vector<Node*> *NDigital::getCloseTable()
 {
     return close_table_;
@@ -199,52 +296,22 @@ vector<vector<int>> NDigital::getEndCloseMap()
     return (*close_table_)[close_table_->size() - 1]->getMap();
 }
 
+vector<vector<int>> NDigital::getOpeneMap(int id)
+{
+    return (*open_table_)[id]->getMap();
+}
+
+vector<vector<int>> NDigital::getMinOpeneMap()
+{
+    return min_open_map_;
+}
+
 vector<TableTips> NDigital::getOpenTableTips()
 {
-    open_table_tips_.resize(open_table_->size());
-    vector<bool> if_set(open_table_->size(), false);
-    for (int i = 0; i < open_table_->size(); i++)
-    {
-        map<int, Node*>::iterator iter = open_table_->begin();
-        TableTips new_table_tips = {0, 0, 0};
-        int min_site = 0;
-        for (int j = 0; iter != open_table_->end(); iter++, j++)
-        {
-            if (if_set[j] == false)
-            {
-                if (new_table_tips.value == 0)
-                {
-                    new_table_tips.id = iter->second->getId();
-                    new_table_tips.layer = iter->second->getLayer();
-                    new_table_tips.value = iter->second->getF();
-                    min_site = j;
-                }
-                else if(new_table_tips.value > iter->second->getF())
-                {
-                    new_table_tips.id = iter->second->getId();
-                    new_table_tips.layer = iter->second->getLayer();
-                    new_table_tips.value = iter->second->getF();
-                    min_site = j;
-                }
-            }
-        }
-
-        if_set[min_site] = true;
-        open_table_tips_[i] = new_table_tips;
-    }
-
     return open_table_tips_;
 }
 
 vector<TableTips> NDigital::getCloseTableTips()
 {
-    close_table_tips_.resize(close_table_->size());
-
-    for (int i = 0; i < close_table_->size(); i++)
-    {
-        close_table_tips_[i].id = (*close_table_)[i]->getId();
-        close_table_tips_[i].layer = (*close_table_)[i]->getLayer();
-        close_table_tips_[i].value = (*close_table_)[i]->getF();
-    }
     return close_table_tips_;
 }

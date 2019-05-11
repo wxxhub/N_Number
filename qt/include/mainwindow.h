@@ -30,7 +30,13 @@ private slots:
 
     void on_CreateTable_clicked();
 
+    void on_Process_clicked();
     void on_ProcessOnce_clicked();
+
+    void onOpenTableCurrenChange(const QModelIndex current, const QModelIndex &previous);
+    void onCloseTableCurrenChange(const QModelIndex current, const QModelIndex &previous);
+
+    void on_Clean_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -46,6 +52,8 @@ private:
     void initTables();
     void updateTable();
     void updateMap();
+    void setProcessButton(bool enable);
+    void cleanr();
     QLabel* newLable(int num);
 
 // test
@@ -54,6 +62,8 @@ private:
     NDigital *n_digital_;
     std::vector<std::vector<int>> origion_;
     std::vector<std::vector<int>> goal_;
+
+    bool first_create_;
 };
 
 #endif // MAINWINDOW_H

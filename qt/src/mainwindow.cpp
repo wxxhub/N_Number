@@ -4,7 +4,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    dimesion_(3)
+    dimesion_(3),
+    first_create_(true)
 {
     n_digital_ = new NDigital();
 
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     open_table_model_->setHeaderData(0,Qt::Horizontal,QString::fromLocal8Bit("编号"));
     open_table_model_->setHeaderData(1,Qt::Horizontal,QString::fromLocal8Bit("层数"));
     open_table_model_->setHeaderData(2,Qt::Horizontal,QString::fromLocal8Bit("估价值"));
+//    open_table_model_->set
 
     close_table_model_->setColumnCount(3);
     close_table_model_->setHeaderData(0,Qt::Horizontal,QString::fromLocal8Bit("编号"));
@@ -46,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->openTable->verticalHeader()->hide();
     ui->openTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     ui->openTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    connect(ui->openTable->selectionModel(),&QItemSelectionModel::currentChanged,this,&MainWindow::onOpenTableCurrenChange);
 
     ui->closeTable->setModel(close_table_model_);
     ui->closeTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -58,7 +61,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->closeTable->verticalHeader()->hide();
     ui->closeTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     ui->closeTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    connect(ui->closeTable->selectionModel(),&QItemSelectionModel::currentChanged,this,&MainWindow::onCloseTableCurrenChange);
 
+    // set button
+    setProcessButton(false);
 }
 
 MainWindow::~MainWindow()
@@ -69,7 +75,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_SelectDimesion_valueChanged(int arg1)
 {
     dimesion_ = sqrt(arg1 + 1);
-    ui->TestLabel->setText(QString::number(arg1)+"__"+QString::number(dimesion_));
+//    ui->TestLabel->setText(QString::number(arg1)+"__"+QString::number(dimesion_));
 }
 
 void MainWindow::cleanNode(QGridLayout *g_layout)
@@ -89,11 +95,30 @@ void MainWindow::cleanNode(QGridLayout *g_layout)
 
 void MainWindow::on_CreateTable_clicked()
 {
-    cleanNode(ui->OrigionNode);
-    cleanNode(ui->GoalNode);
+    if (first_create_)
+    {
+        first_create_ = false;
+    }
+    else
+    {
+        cleanr();
+    }
 
-    n_digital_->getDefault3Map(origion_, goal_);
-    n_digital_->setMap3(origion_, goal_);
+    if (dimesion_ == 3)
+    {
+        n_digital_->getDefault3Map(origion_, goal_);
+        n_digital_->setMap3(origion_, goal_);
+    }
+    else if (dimesion_ == 4)
+    {
+        n_digital_->getDefault4Map(origion_, goal_);
+        n_digital_->setMap4(origion_, goal_);
+    }
+    else
+    {
+        QMessageBox::information(this,"提示","维度过高, 请重设置维度");
+        return;
+    }
 
     for (int i = 0; i < dimesion_; i++)
     {
@@ -103,6 +128,8 @@ void MainWindow::on_CreateTable_clicked()
             ui->OrigionNode->addWidget(newLable(origion_[i][j]), i, j, 1, 1);
         }
     }
+
+    setProcessButton(true);
 }
 
 QLabel* MainWindow::newLable(int num)
@@ -132,11 +159,56 @@ void MainWindow::on_ProcessOnce_clicked()
     }
 }
 
+void MainWindow::onOpenTableCurrenChange(const QModelIndex current, const QModelIndex &previous)
+{
+    QModelIndex index = current.sibling(current.row(),0);
+    QStandardItem* item = open_table_model_->itemFromIndex(index);
+    if (item)
+    {
+//        QMessageBox::information(this,"提示", item->text());
+        int current_id = item->text().toInt();
+        cleanNode(ui->OpenResult);
+        std::vector<std::vector<int>> open_map = n_digital_->getOpeneMap(current_id);
+
+        for (int i = 0; i < dimesion_; i++)
+        {
+            for (int j = 0; j < dimesion_; j++)
+            {
+                ui->OpenResult->addWidget(newLable(open_map[i][j]), i, j, 1, 1);
+            }
+        }
+    }
+}
+
+void MainWindow::onCloseTableCurrenChange(const QModelIndex current, const QModelIndex &previous)
+{
+    QModelIndex index = current.sibling(current.row(),0);
+    QStandardItem* item = close_table_model_->itemFromIndex(index);
+    if (item)
+    {
+        cleanNode(ui->CloseResult);
+        std::vector<std::vector<int>> close_map = n_digital_->getCloseMap(current.row());
+        for (int i = 0; i < dimesion_; i++)
+        {
+            for (int j = 0; j < dimesion_; j++)
+            {
+                ui->CloseResult->addWidget(newLable(close_map[i][j]), i, j, 1, 1);
+            }
+        }
+    }
+}
+
 void MainWindow::updateTable()
 {
-    // update open table
-    std::vector<TableTips> open_tips = n_digital_->getOpenTableTips();
+    // clean table
     open_table_model_->removeRows(0, open_table_model_->rowCount());
+    close_table_model_->removeRows(0, close_table_model_->rowCount());
+
+    // get tips
+    std::vector<TableTips> open_tips = n_digital_->getOpenTableTips();
+    std::vector<TableTips> close_tips = n_digital_->getCloseTableTips();
+
+    // update open table
     for (int i = 0; i < open_tips.size(); i++)
     {
         open_table_model_->setItem(i, 0, new QStandardItem(QString::number(open_tips[i].id)));
@@ -145,8 +217,6 @@ void MainWindow::updateTable()
     }
 
     // update close table
-    std::vector<TableTips> close_tips = n_digital_->getCloseTableTips();
-    close_table_model_->removeRows(0, close_table_model_->rowCount());
     for (int i = 0; i < close_tips.size(); i++)
     {
         close_table_model_->setItem(i, 0, new QStandardItem(QString::number(close_tips[i].id)));
@@ -157,15 +227,60 @@ void MainWindow::updateTable()
 
 void MainWindow::updateMap()
 {
+    // clean map
     cleanNode(ui->CloseResult);
+    cleanNode(ui->MinOpenResult);
+    cleanNode(ui->OpenResult);
+
+    // get map
+    std::vector<std::vector<int>> close_map = n_digital_->getEndCloseMap();
+    std::vector<std::vector<int>> min_open_map = n_digital_->getMinOpeneMap();
 
     // update close_map
-    std::vector<std::vector<int>> close_map = n_digital_->getEndCloseMap();
     for (int i = 0; i < dimesion_; i++)
     {
         for (int j = 0; j < dimesion_; j++)
         {
             ui->CloseResult->addWidget(newLable(close_map[i][j]), i, j, 1, 1);
+            ui->MinOpenResult->addWidget(newLable(min_open_map[i][j]), i, j, 1, 1);
+            ui->OpenResult->addWidget(newLable(min_open_map[i][j]), i, j, 1, 1);
         }
     }
+}
+
+void MainWindow::on_Process_clicked()
+{
+    while (n_digital_->findNext() != 0);
+    updateTable();
+    updateMap();
+}
+
+void MainWindow::setProcessButton(bool enable)
+{
+    ui->ProcessOnce->setEnabled(enable);
+    ui->Process->setEnabled(enable);
+    ui->Clean->setEnabled(enable);
+}
+
+void MainWindow::on_Clean_clicked()
+{
+    cleanr();
+
+    setProcessButton(false);
+}
+
+void MainWindow::cleanr()
+{
+    n_digital_->cleanr();
+
+    // clean map
+    cleanNode(ui->CloseResult);
+    cleanNode(ui->MinOpenResult);
+    cleanNode(ui->OpenResult);
+    cleanNode(ui->OrigionNode);
+    cleanNode(ui->GoalNode);
+
+    // clean table
+    open_table_model_->removeRows(0, open_table_model_->rowCount());
+    close_table_model_->removeRows(0, close_table_model_->rowCount());
 }

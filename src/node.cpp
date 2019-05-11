@@ -15,7 +15,14 @@ Node::Node(const int layer, GlobalConfig *global_config, std::map<int, Node*> *o
 
 Node::~Node()
 {
+    if (now_point_ != nullptr)
+        delete now_point_;
 
+    for (int i = 0; i < child_node_.size(); i++)
+    {
+        if (child_node_[i] != nullptr)
+            delete child_node_[i];
+    }
 }
 
 int Node::process()
@@ -36,14 +43,8 @@ int Node::process()
 
             Node *new_node = new Node(layer_ + 1, global_config_, open_table_, close_table_);
             new_node->setMap(dimension_, new_map, goal_, Direction(i));
+            new_node->setParentNode(this);
             child_node_.push_back(new_node);
-
-            // if match finish find
-            if (new_node->getH() == 0)
-            {
-                printf ("ok!\n");
-                return 0;
-            }
 
             // add new_node in open_set
             (*open_table_)[global_config_->getNowId()] = new_node;
@@ -58,6 +59,13 @@ int Node::process()
                     open_table_->erase(iter);
                     break;
                 }
+            }
+
+            // if match finish find
+            if (new_node->getH() == 0)
+            {
+                printf ("ok!\n");
+                return 0;
             }
         }
     }
@@ -118,6 +126,11 @@ void Node::setMap(const int dimension, const vector<vector<int>> map, std::vecto
     }
 
     setF();
+}
+
+void Node::setParentNode(Node* parent_node)
+{
+    parent_node_ = parent_node;
 }
 
 bool Node::move(Direction direction, vector<vector<int>>& map)

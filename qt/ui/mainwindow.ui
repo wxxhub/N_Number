@@ -14,25 +14,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QSlider" name="SpeedSelect">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>230</y>
-      <width>161</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
    <widget class="QSpinBox" name="SelectDimesion">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>190</y>
-      <width>221</width>
+      <y>187</y>
+      <width>211</width>
       <height>26</height>
      </rect>
     </property>
@@ -41,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>250</x>
-      <y>190</y>
+      <y>187</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -50,11 +37,11 @@
      <string>生成棋盘</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="Process">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>260</y>
+      <x>10</x>
+      <y>216</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -66,8 +53,8 @@
    <widget class="QPushButton" name="ProcessOnce">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>260</y>
+      <x>130</x>
+      <y>216</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -101,8 +88,8 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>151</width>
-      <height>151</height>
+      <width>161</width>
+      <height>161</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="OrigionNode"/>
@@ -147,6 +134,10 @@
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;***&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Author : wxx  &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;E-mail : wxx0520@foxmail.com&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;***&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;A*算法流程:&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;(1)把S放入Open Table, 记f=h, 令Close表为空表&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;(2)若Open Table为空表, 则宣告失败&lt;/span&gt;&lt;/p&gt;
@@ -235,10 +226,10 @@ p, li { white-space: pre-wrap; }
    <widget class="QWidget" name="gridLayoutWidget_5">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>180</x>
       <y>20</y>
-      <width>151</width>
-      <height>151</height>
+      <width>161</width>
+      <height>161</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="GoalNode"/>
@@ -259,7 +250,7 @@ p, li { white-space: pre-wrap; }
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>190</x>
+      <x>180</x>
       <y>0</y>
       <width>121</width>
       <height>17</height>
@@ -267,6 +258,69 @@ p, li { white-space: pre-wrap; }
     </property>
     <property name="text">
      <string>Goal State:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>810</x>
+      <y>120</y>
+      <width>111</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>now close_set:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Clean">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>216</y>
+      <width>89</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>清除</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>250</y>
+      <width>331</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="resultTreeLayout"/>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>10</y>
+      <width>20</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>0</y>
+      <width>20</width>
+      <height>481</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
     </property>
    </widget>
   </widget>
