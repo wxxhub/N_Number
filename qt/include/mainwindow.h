@@ -35,6 +35,7 @@ private slots:
 
     void onOpenTableCurrenChange(const QModelIndex current, const QModelIndex &previous);
     void onCloseTableCurrenChange(const QModelIndex current, const QModelIndex &previous);
+    void onResultTableCurrenChange(const QModelIndex current, const QModelIndex &previous);
 
     void on_Clean_clicked();
 
@@ -44,6 +45,7 @@ private:
 
     QStandardItemModel *open_table_model_;
     QStandardItemModel *close_table_model_;
+    QStandardItemModel *result_table_model_;
 
     std::vector<std::vector<int>> origion_state_;
     std::vector<std::vector<int>> goal_state_;
@@ -52,8 +54,11 @@ private:
     void initTables();
     void updateTable();
     void updateMap();
+    void updateResultTable();
     void setProcessButton(bool enable);
+    void endProcess();
     void cleanr();
+
     QLabel* newLable(int num);
 
 // test

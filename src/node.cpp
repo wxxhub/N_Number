@@ -4,6 +4,7 @@ using namespace std;
 
 Node::Node(const int layer, GlobalConfig *global_config, std::map<int, Node*> *open_set, vector<Node*> *close_table)
 {
+    parent_node_ = NULL;
     layer_ = layer;
     g_ = layer_;
     now_point_ = new Point();
@@ -29,25 +30,22 @@ int Node::process()
 {
     if (layer_ > max_layer)
         return -2;
+    
+    if (getH() == 0)
+    {
+        return 0;
+    }
 
     //  move 
     for (int i = 0; i < 4; i++)
     {
         vector<vector<int>> new_map = map_;
         
-        bool result = move(Direction(i), new_map);
-        if (result == true)
+        MoveResult result = move(Direction(i), new_map);
+        if (result == MOVE_SUCCESS)
         {
-            // add id
-            global_config_->addId();
 
-            Node *new_node = new Node(layer_ + 1, global_config_, open_table_, close_table_);
-            new_node->setMap(dimension_, new_map, goal_, Direction(i));
-            new_node->setParentNode(this);
-            child_node_.push_back(new_node);
-
-            // add new_node in open_set
-            (*open_table_)[global_config_->getNowId()] = new_node;
+            Node *new_node = createChildNode(new_map, Direction(i));
 
             // remove current node from open_set and put it to close_table
             map<int, Node*>::iterator iter = open_table_->begin();
@@ -61,19 +59,29 @@ int Node::process()
                 }
             }
 
-            // if match finish find
-            if (new_node->getH() == 0)
+            if (new_node)
             {
-                printf ("ok!\n");
-                return 0;
+                // add new_node in open_set
+                (*open_table_)[global_config_->getNowId()] = new_node;
+
+                // if match finish find
+                if (new_node->getH() == 0)
+                {
+                    return 0;
+                }
             }
+        }
+        else if (result == H_BYOUND)
+        {
+            Node *new_node = createChildNode(new_map, Direction(i));
+            close_table_->push_back(new_node);
         }
     }
 
     // charge child node size
     if (child_node_.size() <= 0)
     {
-        printf ("no chiled!\n");
+        // no child
         return -1;
     }
 
@@ -133,63 +141,72 @@ void Node::setParentNode(Node* parent_node)
     parent_node_ = parent_node;
 }
 
-bool Node::move(Direction direction, vector<vector<int>>& map)
+MoveResult Node::move(Direction direction, vector<vector<int>>& new_map)
 {
     if (direction == forbid_direction_)
     {
-        return false;
+        return MOVE_FAILED;
     }
 
+    // move
     switch (direction)
     {
         case move_up:
         {
             if (now_point_->y - 1 < 0)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y-1][now_point_->x];
-            map[now_point_->y-1][now_point_->x] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y-1][now_point_->x];
+            new_map[now_point_->y-1][now_point_->x] = 0;
 
-            return true;
+            break;
         }
             
         
         case move_down:
         {
             if (now_point_->y + 1 >= dimension_)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y+1][now_point_->x];
-            map[now_point_->y+1][now_point_->x] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y+1][now_point_->x];
+            new_map[now_point_->y+1][now_point_->x] = 0;
 
-            return true;
+            break;
         }
         
         case move_left:
         {
             if (now_point_->x - 1 < 0)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x - 1];
-            map[now_point_->y][now_point_->x - 1] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x - 1];
+            new_map[now_point_->y][now_point_->x - 1] = 0;
 
-            return true;
+            break;
         }
 
         case move_right:
         {
             if (now_point_->x + 1 >= dimension_)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x + 1];
-            map[now_point_->y][now_point_->x + 1] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x + 1];
+            new_map[now_point_->y][now_point_->x + 1] = 0;
 
-            return true;
+            break;
         }
         
         default:
-            return false;
+            return MOVE_FAILED;
     }
+
+    // charge wether h_ bigger than goal h
+    // if (global_config_->calculateH(new_map) > h_)
+    // {
+    //     return H_BYOUND;
+    // }
+
+    return MOVE_SUCCESS;
 }
 
 int Node::getH()
@@ -217,6 +234,11 @@ int Node::getLayer()
     return layer_;
 }
 
+Node* Node::getParentNode()
+{
+    return parent_node_;
+}
+
 std::vector<std::vector<int>> Node::getMap()
 {
     return map_;
@@ -225,6 +247,61 @@ std::vector<std::vector<int>> Node::getMap()
 void Node::setF()
 {
     f_ = g_ + h_;
+}
+
+Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)
+{
+    // check if same with open or close table's member
+    map<int, Node*>::iterator iter = open_table_->begin();
+    for (; iter != open_table_->end(); iter++)
+    {
+        int not_same_num = 0;
+        vector<vector<int>> iter_map = iter->second->getMap();
+        for (int i = 0; i < iter_map.size(); i++)
+        {
+            for (int j = 0; j < iter_map[i].size(); j++)
+            {
+                if (iter_map[i][j] != new_map[i][j])
+                {
+                    not_same_num++;
+                }
+            }
+        }
+
+        if (not_same_num == 0)
+            return NULL;
+    }
+
+    for (int n = 0; n < (*close_table_).size(); n++)
+    {
+        int not_same_num = 0;
+        vector<vector<int>> iter_map = (*close_table_)[n]->getMap();
+
+        for (int i = 0; i < iter_map.size(); i++)
+        {
+            for (int j = 0; j < iter_map[i].size(); j++)
+            {
+                if (iter_map[i][j] != new_map[i][j])
+                {
+                    not_same_num++;
+                }
+            }
+        }
+
+        if (not_same_num == 0)
+            return NULL;
+    }
+    
+    // add id
+    global_config_->addId();
+
+    Node *new_node = new Node(layer_ + 1, global_config_, open_table_, close_table_);
+    new_node->setMap(dimension_, new_map, goal_, direction);
+    Node *self_node = this;
+    new_node->setParentNode(self_node);
+    child_node_.push_back(new_node);
+
+    return new_node;
 }
 
 void Node::printMap(const vector<vector<int>> map)

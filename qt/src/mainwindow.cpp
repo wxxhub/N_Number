@@ -11,18 +11,23 @@ MainWindow::MainWindow(QWidget *parent) :
 
     open_table_model_ = new QStandardItemModel();
     close_table_model_ = new QStandardItemModel();
+    result_table_model_ = new QStandardItemModel();
 
     // init model
     open_table_model_->setColumnCount(3);
     open_table_model_->setHeaderData(0,Qt::Horizontal,QString::fromLocal8Bit("编号"));
     open_table_model_->setHeaderData(1,Qt::Horizontal,QString::fromLocal8Bit("层数"));
     open_table_model_->setHeaderData(2,Qt::Horizontal,QString::fromLocal8Bit("估价值"));
-//    open_table_model_->set
 
     close_table_model_->setColumnCount(3);
     close_table_model_->setHeaderData(0,Qt::Horizontal,QString::fromLocal8Bit("编号"));
     close_table_model_->setHeaderData(1,Qt::Horizontal,QString::fromLocal8Bit("层数"));
     close_table_model_->setHeaderData(2,Qt::Horizontal,QString::fromLocal8Bit("估价值"));
+
+    result_table_model_->setColumnCount(3);
+    result_table_model_->setHeaderData(0,Qt::Horizontal,QString::fromLocal8Bit("编号"));
+    result_table_model_->setHeaderData(1,Qt::Horizontal,QString::fromLocal8Bit("层数"));
+    result_table_model_->setHeaderData(2,Qt::Horizontal,QString::fromLocal8Bit("估价值"));
 
     ui->setupUi(this);
 
@@ -31,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->OpenResult->setSpacing(0);
     ui->MinOpenResult->setSpacing(0);
     ui->CloseResult->setSpacing(0);
+    ui->ResultLayout->setSpacing(0);
 
     ui->SelectDimesion->setSuffix("数码难题");
     ui->SelectDimesion->setSingleStep(7);
@@ -63,8 +69,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->closeTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     connect(ui->closeTable->selectionModel(),&QItemSelectionModel::currentChanged,this,&MainWindow::onCloseTableCurrenChange);
 
+    ui->resultTable->setModel(result_table_model_);
+    ui->resultTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->resultTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->resultTable->setColumnWidth(0,40);
+    ui->resultTable->setColumnWidth(1,40);
+    ui->resultTable->setColumnWidth(2,55);
+    ui->resultTable->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+    ui->resultTable->setAlternatingRowColors(true);
+    ui->resultTable->verticalHeader()->hide();
+    ui->resultTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    ui->resultTable->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    connect(ui->resultTable->selectionModel(),&QItemSelectionModel::currentChanged,this,&MainWindow::onResultTableCurrenChange);
+
     // set button
     setProcessButton(false);
+
+    // set Map
+    ui->ResultLayout->setSpacing(1);
 }
 
 MainWindow::~MainWindow()
@@ -148,6 +170,14 @@ QLabel* MainWindow::newLable(int num)
     return new_label;
 }
 
+void MainWindow::on_Process_clicked()
+{
+    while (n_digital_->findNext() != 0);
+    updateTable();
+    updateMap();
+    endProcess();
+}
+
 void MainWindow::on_ProcessOnce_clicked()
 {
     int result = n_digital_->findNext();
@@ -155,7 +185,7 @@ void MainWindow::on_ProcessOnce_clicked()
     updateMap();
     if (result == 0)
     {
-        QMessageBox::information(this,"提示","查找完成");
+        endProcess();
     }
 }
 
@@ -198,6 +228,24 @@ void MainWindow::onCloseTableCurrenChange(const QModelIndex current, const QMode
     }
 }
 
+void MainWindow::onResultTableCurrenChange(const QModelIndex current, const QModelIndex &previous)
+{
+    QModelIndex index = current.sibling(current.row(),0);
+    QStandardItem* item = result_table_model_->itemFromIndex(index);
+    if (item)
+    {
+        cleanNode(ui->ResultLayout);
+        std::vector<std::vector<int>> result_map = n_digital_->getResultMap(current.row());
+        for (int i = 0; i < dimesion_; i++)
+        {
+            for (int j = 0; j < dimesion_; j++)
+            {
+                ui->ResultLayout->addWidget(newLable(result_map[i][j]), i, j, 1, 1);
+            }
+        }
+    }
+}
+
 void MainWindow::updateTable()
 {
     // clean table
@@ -207,6 +255,13 @@ void MainWindow::updateTable()
     // get tips
     std::vector<TableTips> open_tips = n_digital_->getOpenTableTips();
     std::vector<TableTips> close_tips = n_digital_->getCloseTableTips();
+
+    if (open_tips.size() <= 0)
+    {
+        setProcessButton(false);
+        QMessageBox::information(this,"提示","无解");
+    }
+
 
     // update open table
     for (int i = 0; i < open_tips.size(); i++)
@@ -248,24 +303,41 @@ void MainWindow::updateMap()
     }
 }
 
-void MainWindow::on_Process_clicked()
+void MainWindow::updateResultTable()
 {
-    while (n_digital_->findNext() != 0);
-    updateTable();
-    updateMap();
+    // clean result map
+    result_table_model_->removeRows(0, result_table_model_->rowCount());
+
+    //get map
+    std::vector<TableTips> result_tips = n_digital_->getResultTableTips();
+
+    //update result table
+    for (int i = 0; i < result_tips.size(); i++)
+    {
+        result_table_model_->setItem(i, 0, new QStandardItem(QString::number(result_tips[i].id)));
+        result_table_model_->setItem(i, 1, new QStandardItem(QString::number(result_tips[i].layer)));
+        result_table_model_->setItem(i, 2, new QStandardItem(QString::number(result_tips[i].value)));
+    }
 }
 
 void MainWindow::setProcessButton(bool enable)
 {
     ui->ProcessOnce->setEnabled(enable);
     ui->Process->setEnabled(enable);
-    ui->Clean->setEnabled(enable);
 }
 
 void MainWindow::on_Clean_clicked()
 {
     cleanr();
 
+    setProcessButton(false);
+}
+
+void MainWindow::endProcess()
+{
+    QMessageBox::information(this,"提示","查找完成");
+
+    updateResultTable();
     setProcessButton(false);
 }
 
@@ -279,8 +351,10 @@ void MainWindow::cleanr()
     cleanNode(ui->OpenResult);
     cleanNode(ui->OrigionNode);
     cleanNode(ui->GoalNode);
+    cleanNode(ui->ResultLayout);
 
     // clean table
     open_table_model_->removeRows(0, open_table_model_->rowCount());
     close_table_model_->removeRows(0, close_table_model_->rowCount());
+    result_table_model_->removeRows(0, close_table_model_->rowCount());
 }

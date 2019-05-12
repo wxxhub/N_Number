@@ -4,7 +4,14 @@
 
 #include "include/n_digital/global_config.h"
 
-const int max_layer = 10;
+const int max_layer = 32;
+
+enum MoveResult
+{
+    MOVE_SUCCESS,
+    MOVE_FAILED,
+    H_BYOUND,
+};
 
 enum Direction
 {
@@ -42,6 +49,7 @@ public:
     int getF();
     int getId();
     int getLayer();
+    Node* getParentNode();
 
     std::vector<std::vector<int>> getMap();
 
@@ -52,19 +60,20 @@ public:
 private:
     int dimension_;
 
-    int g_;     // S0 -> n
+    int g_;     // S0 -> n = layer
     int h_;     // n  -> Sg
-    int f_;     
+    int f_;     // f_ = g_ + h_
     int layer_;
 
     int id_;
 
     Node* parent_node_;
 
-    Point *now_point_;
+    Point* now_point_;
     Direction forbid_direction_;
+    Direction forbid_direction_list_;
 
-    GlobalConfig *global_config_;
+    GlobalConfig* global_config_;
 
     std::vector<Node*> child_node_;
 
@@ -74,6 +83,8 @@ private:
     std::map<int, Node*> *open_table_;
     std::vector<Node*> *close_table_;
 
-    bool move(Direction direction, std::vector<std::vector<int>>& new_map);
+    MoveResult move(Direction direction, std::vector<std::vector<int>>& new_map);
     void setF();
+
+    Node* createChildNode(std::vector<std::vector<int>> new_map, Direction direction);
 };

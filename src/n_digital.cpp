@@ -26,9 +26,9 @@ int NDigital::findNext()
     int min_f = 0;
     for (; iter != open_table_->end(); iter++)
     {
-        printf ("min_F: %d\n", iter->second->getF());
-        printf ("id_: %d\n", iter->first);
-        root_node_->printMap(iter->second->getMap());
+        // printf ("min_F: %d\n", iter->second->getF());
+        // printf ("id_: %d\n", iter->first);
+        // root_node_->printMap(iter->second->getMap());
         if (index == -1)
         {
             index = iter->first;
@@ -45,28 +45,35 @@ int NDigital::findNext()
     }
 
     // process min_f node
-    printf ("index: %d\n", index);
+    // printf ("index: %d\n", index);
     int result = (*open_table_)[index]->process();
+    
     updateResult();
+
+    if (result == 0)
+    {
+        setResultNode();
+    }
+
     return result;
 }
 
-void NDigital::setMap3(vector<vector<int>> origion, vector<vector<int>> goal)
+void NDigital::setMap3(vector<vector<int>> origion_map, vector<vector<int>> goal_map)
 {
-    update(3, origion, goal);
+    update(3, origion_map, goal_map);
 }
 
-void NDigital::setMap4(vector<vector<int>> origion, vector<vector<int>> goal)
+void NDigital::setMap4(vector<vector<int>> origion_map, vector<vector<int>> goal_map)
 {
-    update(4, origion, goal);
+    update(4, origion_map, goal_map);
 }
 
-void NDigital::setMap5(vector<vector<int>> origion, vector<vector<int>> goal)
+void NDigital::setMap5(vector<vector<int>> origion_map, vector<vector<int>> goal_map)
 {
-    update(5, origion, goal);
+    update(5, origion_map, goal_map);
 }
 
-void NDigital::update(int dimension, int origion[3][3], int goal[3][3])
+void NDigital::update(int dimension, vector<vector<int>> origion_map, vector<vector<int>> goal_map)
 {
     dimension_ = dimension;
     
@@ -77,10 +84,10 @@ void NDigital::update(int dimension, int origion[3][3], int goal[3][3])
     {
         for (int y = 0; y < dimension_; y++)
         {
-            origion_[y][x] = origion[y][x];
-            goal_[y][x] = goal[y][x];
+            origion_[y][x] = origion_map[y][x];
+            goal_[y][x] = goal_map[y][x];
 
-            if (origion[y][x] == 0)
+            if (origion_map[y][x] == 0)
             {
                 now_point_->x = x;
                 now_point_->y = y;
@@ -89,36 +96,36 @@ void NDigital::update(int dimension, int origion[3][3], int goal[3][3])
     }
 
     root_node_->setMap(dimension_, origion_, &goal_, none_direction);
+    global_config_->setGoalMap(goal_map);
 }
 
-void NDigital::update(int dimension, vector<vector<int>> origion, vector<vector<int>> goal)
+void NDigital::setResultNode()
 {
-    dimension_ = dimension;
-    
-    origion_.resize(dimension_, vector<int>(dimension_));
-    goal_.resize(dimension_, vector<int>(dimension_));
+    result_node_ = (*open_table_)[open_table_tips_[0].id];
 
-    for (int x = 0; x < dimension_; x++)
+    Node *iter_node = result_node_;
+
+    result_table_tips_.clear();
+    result_table_.clear();
+
+    while (iter_node)
     {
-        for (int y = 0; y < dimension_; y++)
-        {
-            origion_[y][x] = origion[y][x];
-            goal_[y][x] = goal[y][x];
+        result_table_.push_back(iter_node);
 
-            if (origion[y][x] == 0)
-            {
-                now_point_->x = x;
-                now_point_->y = y;
-            }
-        }
+        TableTips new_table_tips;
+        new_table_tips.id = iter_node->getId();
+        new_table_tips.value = iter_node->getF();
+        new_table_tips.layer = iter_node->getLayer();
+        result_table_tips_.push_back(new_table_tips);
+
+        iter_node = iter_node->getParentNode();
     }
-
-    root_node_->setMap(dimension_, origion_, &goal_, none_direction);
 }
 
 void NDigital::updateResult()
 {
     // update open_table_tips
+    open_table_tips_.clear();
     open_table_tips_.resize(open_table_->size());
     vector<bool> if_set(open_table_->size(), false);
     for (int i = 0; i < open_table_->size(); i++)
@@ -152,6 +159,7 @@ void NDigital::updateResult()
     }
 
     // update close_table_tips
+    close_table_tips_.clear();
     close_table_tips_.resize(close_table_->size());
 
     for (int i = 0; i < close_table_->size(); i++)
@@ -174,6 +182,11 @@ void NDigital::cleanr()
     goal_.clear();
     open_table_->clear();
     close_table_->clear();
+    result_table_.clear();
+
+    open_table_tips_.clear();
+    close_table_tips_.clear();
+    result_table_tips_.clear();
 
     Node *delete_node = root_node_;
     root_node_ = new Node(0, global_config_, open_table_, close_table_);
@@ -191,38 +204,44 @@ void NDigital::checkCloseTable()
     printf ("############### end ###############\n");
 }
 
-void NDigital::getDefault3Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
+void NDigital::getDefault3Map(vector<vector<int>> &origion_map, vector<vector<int>> &goal_map)
 {
-    origion.resize(3);
-    goal.resize(3);
+    origion_map.resize(3);
+    goal_map.resize(3);
     int default_origion[3][3] = {
         1, 2, 3,
         4, 5, 0,
         6, 8, 7,
     };
 
+    // int default_goal[3][3] = {
+    //     1, 2, 3,
+    //     6, 4, 5,
+    //     0, 8, 7,
+    // };
+
     int default_goal[3][3] = {
-        1, 2, 3,
+        0, 2, 3,
         6, 4, 5,
-        0, 8, 7,
+        1, 8, 7,
     };
 
     for (int i = 0; i < 3; i++)
     {
-        origion[i].resize(3);
-        goal[i].resize(3);
+        origion_map[i].resize(3);
+        goal_map[i].resize(3);
         for (int j = 0; j < 3; j++)
         {
-            origion[i][j] = default_origion[i][j];
-            goal[i][j]    =default_goal[i][j];
+            origion_map[i][j] = default_origion[i][j];
+            goal_map[i][j]    =default_goal[i][j];
         }
     }
 }
 
-void NDigital::getDefault4Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
+void NDigital::getDefault4Map(vector<vector<int>> &origion_map, vector<vector<int>> &goal_map)
 {
-    origion.resize(4);
-    goal.resize(4);
+    origion_map.resize(4);
+    goal_map.resize(4);
     int default_origion[4][4] = {
         0, 1, 3, 8,
         4, 2, 5, 9,
@@ -233,26 +252,26 @@ void NDigital::getDefault4Map(vector<vector<int>> &origion, vector<vector<int>> 
     int default_goal[4][4] = {
         1, 2, 3, 8,
         4, 5, 7, 9,
-        6, 12, 8, 10,
-        11, 13, 14, 0,
+        6, 13, 12, 10,
+        11, 8, 14, 0,
     };
 
     for (int i = 0; i < 4; i++)
     {
-        origion[i].resize(4);
-        goal[i].resize(4);
+        origion_map[i].resize(4);
+        goal_map[i].resize(4);
         for (int j = 0; j < 4; j++)
         {
-            origion[i][j] = default_origion[i][j];
-            goal[i][j]    =default_goal[i][j];
+            origion_map[i][j] = default_origion[i][j];
+            goal_map[i][j]    =default_goal[i][j];
         }
     }
 }
 
-void NDigital::getDefault5Map(vector<vector<int>> &origion, vector<vector<int>> &goal)
+void NDigital::getDefault5Map(vector<vector<int>> &origion_map, vector<vector<int>> &goal_map)
 {
-    origion.resize(5);
-    goal.resize(5);
+    origion_map.resize(5);
+    goal_map.resize(5);
     int default_origion[5][5] = {
         1, 2, 3, 9, 10,
         4, 5, 0, 11, 12,
@@ -271,12 +290,12 @@ void NDigital::getDefault5Map(vector<vector<int>> &origion, vector<vector<int>> 
 
     for (int i = 0; i < 5; i++)
     {
-        origion[i].resize(5);
-        goal[i].resize(5);
+        origion_map[i].resize(5);
+        goal_map[i].resize(5);
         for (int j = 0; j < 5; j++)
         {
-            origion[i][j] = default_origion[i][j];
-            goal[i][j]    =default_goal[i][j];
+            origion_map[i][j] = default_origion[i][j];
+            goal_map[i][j]    =default_goal[i][j];
         }
     }
 }
@@ -306,6 +325,11 @@ vector<vector<int>> NDigital::getMinOpeneMap()
     return min_open_map_;
 }
 
+std::vector<std::vector<int>>  NDigital::getResultMap(int id)
+{
+    return result_table_[id]->getMap();
+}
+
 vector<TableTips> NDigital::getOpenTableTips()
 {
     return open_table_tips_;
@@ -314,4 +338,9 @@ vector<TableTips> NDigital::getOpenTableTips()
 vector<TableTips> NDigital::getCloseTableTips()
 {
     return close_table_tips_;
+}
+
+vector<TableTips> NDigital::getResultTableTips()
+{
+    return result_table_tips_;
 }

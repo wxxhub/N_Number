@@ -7,20 +7,8 @@ using namespace std;
 
 int main()
 {
-    // int origion[3][3] = {
-    //     1, 2, 3,
-    //     4, 5, 0,
-    //     6, 8, 7,
-    // };
-
-    // int goal[3][3] = {
-    //     1, 2, 3,
-    //     6, 4, 5,
-    //     0, 8, 7,
-    // };
-
-    int origion[3][3];
-    int goal[3][3];
+    vector<vector<int>> origion;
+    vector<vector<int>> goal;
 
     NDigital *n_digital = new NDigital();
     n_digital->getDefault3Map(origion, goal);

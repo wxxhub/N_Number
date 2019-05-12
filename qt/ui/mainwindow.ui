@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>921</width>
-    <height>554</height>
+    <height>549</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -104,7 +104,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Open Table</string>
+     <string>Open Table:</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -117,7 +117,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Close Table</string>
+     <string>Close Table:</string>
     </property>
    </widget>
    <widget class="QTextBrowser" name="textBrowser">
@@ -286,17 +286,6 @@ p, li { white-space: pre-wrap; }
      <string>清除</string>
     </property>
    </widget>
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>250</y>
-      <width>331</width>
-      <height>231</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="resultTreeLayout"/>
-   </widget>
    <widget class="Line" name="line">
     <property name="geometry">
      <rect>
@@ -322,6 +311,53 @@ p, li { white-space: pre-wrap; }
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
+   </widget>
+   <widget class="QTableView" name="resultTable">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>260</y>
+      <width>150</width>
+      <height>221</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="Line" name="line_3">
+    <property name="geometry">
+     <rect>
+      <x>9</x>
+      <y>243</y>
+      <width>351</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>181</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Result Infomation:</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_6">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>290</y>
+      <width>181</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="ResultLayout"/>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
