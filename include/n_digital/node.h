@@ -4,7 +4,7 @@
 
 #include "include/n_digital/global_config.h"
 
-const int max_layer = 32;
+const int max_layer = 16;
 
 enum MoveResult
 {
