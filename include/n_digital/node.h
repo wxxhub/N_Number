@@ -83,7 +83,7 @@ private:
     std::map<int, Node*> *open_table_;
     std::vector<Node*> *close_table_;
 
-    MoveResult move(Direction direction, std::vector<std::vector<int>>& new_map);
+    bool move(Direction direction, std::vector<std::vector<int>>& map);
     void setF();
 
     Node* createChildNode(std::vector<std::vector<int>> new_map, Direction direction);

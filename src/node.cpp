@@ -30,22 +30,25 @@ int Node::process()
 {
     if (layer_ > max_layer)
         return -2;
-    
-    if (getH() == 0)
-    {
-        return 0;
-    }
 
     //  move 
     for (int i = 0; i < 4; i++)
     {
         vector<vector<int>> new_map = map_;
         
-        MoveResult result = move(Direction(i), new_map);
-        if (result == MOVE_SUCCESS)
+        bool result = move(Direction(i), new_map);
+        if (result == true)
         {
+            // add id
+            global_config_->addId();
 
-            Node *new_node = createChildNode(new_map, Direction(i));
+            Node *new_node = new Node(layer_ + 1, global_config_, open_table_, close_table_);
+            new_node->setMap(dimension_, new_map, goal_, Direction(i));
+            new_node->setParentNode(this);
+            child_node_.push_back(new_node);
+
+            // add new_node in open_set
+            (*open_table_)[global_config_->getNowId()] = new_node;
 
             // remove current node from open_set and put it to close_table
             map<int, Node*>::iterator iter = open_table_->begin();
@@ -59,29 +62,19 @@ int Node::process()
                 }
             }
 
-            if (new_node)
+            // if match finish find
+            if (new_node->getH() == 0)
             {
-                // add new_node in open_set
-                (*open_table_)[global_config_->getNowId()] = new_node;
-
-                // if match finish find
-                if (new_node->getH() == 0)
-                {
-                    return 0;
-                }
+                printf ("ok!\n");
+                return 0;
             }
-        }
-        else if (result == H_BYOUND)
-        {
-            Node *new_node = createChildNode(new_map, Direction(i));
-            close_table_->push_back(new_node);
         }
     }
 
     // charge child node size
     if (child_node_.size() <= 0)
     {
-        // no child
+        printf ("no chiled!\n");
         return -1;
     }
 
@@ -141,72 +134,63 @@ void Node::setParentNode(Node* parent_node)
     parent_node_ = parent_node;
 }
 
-MoveResult Node::move(Direction direction, vector<vector<int>>& new_map)
+bool Node::move(Direction direction, vector<vector<int>>& map)
 {
     if (direction == forbid_direction_)
     {
-        return MOVE_FAILED;
+        return false;
     }
 
-    // move
     switch (direction)
     {
         case move_up:
         {
             if (now_point_->y - 1 < 0)
-                return MOVE_FAILED;
+                return false;
 
-            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y-1][now_point_->x];
-            new_map[now_point_->y-1][now_point_->x] = 0;
+            map[now_point_->y][now_point_->x] = map[now_point_->y-1][now_point_->x];
+            map[now_point_->y-1][now_point_->x] = 0;
 
-            break;
+            return true;
         }
             
         
         case move_down:
         {
             if (now_point_->y + 1 >= dimension_)
-                return MOVE_FAILED;
+                return false;
 
-            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y+1][now_point_->x];
-            new_map[now_point_->y+1][now_point_->x] = 0;
+            map[now_point_->y][now_point_->x] = map[now_point_->y+1][now_point_->x];
+            map[now_point_->y+1][now_point_->x] = 0;
 
-            break;
+            return true;
         }
         
         case move_left:
         {
             if (now_point_->x - 1 < 0)
-                return MOVE_FAILED;
+                return false;
 
-            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x - 1];
-            new_map[now_point_->y][now_point_->x - 1] = 0;
+            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x - 1];
+            map[now_point_->y][now_point_->x - 1] = 0;
 
-            break;
+            return true;
         }
 
         case move_right:
         {
             if (now_point_->x + 1 >= dimension_)
-                return MOVE_FAILED;
+                return false;
 
-            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x + 1];
-            new_map[now_point_->y][now_point_->x + 1] = 0;
+            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x + 1];
+            map[now_point_->y][now_point_->x + 1] = 0;
 
-            break;
+            return true;
         }
         
         default:
-            return MOVE_FAILED;
+            return false;
     }
-
-    // charge wether h_ bigger than goal h
-    // if (global_config_->calculateH(new_map) > h_)
-    // {
-    //     return H_BYOUND;
-    // }
-
-    return MOVE_SUCCESS;
 }
 
 int Node::getH()
@@ -252,6 +236,7 @@ void Node::setF()
 Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)
 {
     // check if same with open or close table's member
+    /*
     map<int, Node*>::iterator iter = open_table_->begin();
     for (; iter != open_table_->end(); iter++)
     {
@@ -291,7 +276,7 @@ Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)
         if (not_same_num == 0)
             return NULL;
     }
-    
+    */
     // add id
     global_config_->addId();
 
