@@ -123,6 +123,11 @@ void NDigital::setResultNode()
     }
 }
 
+void NDigital::setFFunction(int t)
+{
+    global_config_->setFFunction(t);
+}
+
 void NDigital::updateResult()
 {
     // update open_table_tips

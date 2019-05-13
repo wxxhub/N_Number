@@ -102,27 +102,50 @@ int Node::process()
     return 1;
 }
 
-void Node::setMap(const int dimension, const vector<vector<int>> map, std::vector<std::vector<int>> *goal, Direction last_direction)
+void Node::setMap(const int dimension, const vector<vector<int>> new_map, std::vector<std::vector<int>> *goal, Direction last_direction)
 {
-    map_.assign(map.begin(), map.end());
+    map_.assign(new_map.begin(), new_map.end());
     goal_ = goal;
     dimension_ = dimension;
     h_ = 0;
-    for (int x = 0; x < dimension_; x++)
+    if (global_config_->getFFunction() == 0)
     {
-        for (int y = 0; y < dimension_; y++)
+        for (int x = 0; x < dimension_; x++)
         {
-            if (map_[y][x] != (*goal_)[y][x])
-                h_++;
-
-            if (map_[y][x] == 0)
+            for (int y = 0; y < dimension_; y++)
             {
-                now_point_->x = x;
-                now_point_->y = y;
+                if (map_[y][x] != (*goal_)[y][x])
+                    h_++;
+
+                if (map_[y][x] == 0)
+                {
+                    now_point_->x = x;
+                    now_point_->y = y;
+                }
             }
         }
     }
+    else
+    {
+        for (int x = 0; x < dimension_; x++)
+        {
+            for (int y = 0; y < dimension_; y++)
+            {
+                if (map_[y][x] != (*goal_)[y][x])
+                {
+                    h_ += calculatHDistance(x, y);
+                }
 
+                if (map_[y][x] == 0)
+                {
+                    now_point_->x = x;
+                    now_point_->y = y;
+                }
+            }
+        }
+    }
+    
+    
     // set forbid_direction
     switch (last_direction)
     {
@@ -257,6 +280,20 @@ std::vector<std::vector<int>> Node::getMap()
 void Node::setF()
 {
     f_ = g_ + h_;
+}
+
+int Node::calculatHDistance(int x, int y)
+{
+    for (int x1 = 0; x1 < dimension_; x1++)
+    {
+        for (int y1 = 0; y1 < dimension_; y1++)
+        {
+            if (map_[y][x] == (*goal_)[y1][x1])
+            {
+                return abs(y - y1) + abs(x - x1);
+            }
+        }
+    }
 }
 
 Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)

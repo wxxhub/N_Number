@@ -85,6 +85,7 @@ private:
 
     MoveResult move(Direction direction, std::vector<std::vector<int>>& map);
     void setF();
+    int calculatHDistance(int x, int y);
 
     Node* createChildNode(std::vector<std::vector<int>> new_map, Direction direction);
 };

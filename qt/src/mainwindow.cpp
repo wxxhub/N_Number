@@ -42,6 +42,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->SelectDimesion->setSingleStep(7);
     ui->SelectDimesion->setRange(8, 15);
 
+    ui->SelectHFunction->setSuffix("F");
+    ui->SelectHFunction->setSingleStep(1);
+    ui->SelectHFunction->setRange(0, 1);
+
     // setTable
     ui->openTable->setModel(open_table_model_);
     ui->openTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -98,6 +102,11 @@ void MainWindow::on_SelectDimesion_valueChanged(int arg1)
 {
     dimesion_ = sqrt(arg1 + 1);
 //    ui->TestLabel->setText(QString::number(arg1)+"__"+QString::number(dimesion_));
+}
+
+void MainWindow::on_SelectHFunction_valueChanged(int arg1)
+{
+    n_digital_->setFFunction(arg1);
 }
 
 void MainWindow::cleanNode(QGridLayout *g_layout)

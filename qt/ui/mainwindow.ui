@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>187</y>
-      <width>211</width>
+      <width>121</width>
       <height>26</height>
      </rect>
     </property>
@@ -358,6 +358,16 @@ p, li { white-space: pre-wrap; }
      </rect>
     </property>
     <layout class="QGridLayout" name="ResultLayout"/>
+   </widget>
+   <widget class="QSpinBox" name="SelectHFunction">
+    <property name="geometry">
+     <rect>
+      <x>157</x>
+      <y>187</y>
+      <width>61</width>
+      <height>26</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

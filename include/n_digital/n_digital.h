@@ -19,6 +19,7 @@ public:
     void setMap5(std::vector<std::vector<int>> origion_map, std::vector<std::vector<int>> goal_map);
 
     void setResultNode();
+    void setFFunction(int t);
 
     int findNext();
 

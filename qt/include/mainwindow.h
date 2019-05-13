@@ -39,6 +39,8 @@ private slots:
 
     void on_Clean_clicked();
 
+    void on_SelectHFunction_valueChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     int dimesion_;
