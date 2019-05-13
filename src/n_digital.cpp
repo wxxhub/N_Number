@@ -23,15 +23,12 @@ int NDigital::findNext()
     if (open_table_->size() <=0 )
         return -2;
 
-    // choice next node
+    // choice min_f node
     map<int, Node*>::iterator iter = open_table_->begin();
     int index = -1;
     int min_f = 0;
     for (; iter != open_table_->end(); iter++)
     {
-        // printf ("min_F: %d\n", iter->second->getF());
-        // printf ("id_: %d\n", iter->first);
-        // root_node_->printMap(iter->second->getMap());
         if (index == -1)
         {
             index = iter->first;
@@ -46,18 +43,11 @@ int NDigital::findNext()
             }
         }
     }
-
-    // process min_f node
-    // printf ("index: %d\n", index);
+    
     int result = result = (*open_table_)[index]->process();
 
     if (result == -2)
         return result;
-
-    if (open_table_->size() == 0)
-    {
-        return -2;
-    }
     
     updateResult();
 
@@ -342,11 +332,6 @@ vector<vector<int>> NDigital::getMinOpeneMap()
 std::vector<std::vector<int>>  NDigital::getResultMap(int id)
 {
     return result_table_[id]->getMap();
-}
-
-int NDigital::getOpencloseSize()
-{
-    return open_table_->size();
 }
 
 vector<TableTips> NDigital::getOpenTableTips()

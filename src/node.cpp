@@ -61,7 +61,6 @@ int Node::process()
                 // if match finish find
                 if (new_node->getH() == 0)
                 {
-                    printf ("ok!\n");
                     return 0;
                 }
             }
@@ -80,7 +79,7 @@ int Node::process()
     {
         if (open_table_->size() <= 1)
             return -2;
-            
+
         map<int, Node*>::iterator iter = open_table_->begin();
         for (; iter != open_table_->end(); iter++)
         {

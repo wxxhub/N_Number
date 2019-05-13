@@ -38,7 +38,6 @@ public:
     std::vector<std::vector<int>> getMinOpeneMap();
 
     std::vector<std::vector<int>>  getResultMap(int id);
-    int getOpencloseSize();
     
     std::vector<TableTips> getOpenTableTips();
     std::vector<TableTips> getCloseTableTips();
