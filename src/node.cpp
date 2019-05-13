@@ -32,41 +32,63 @@ int Node::process()
         return -2;
 
     //  move 
+    int failed_times = 0;
     for (int i = 0; i < 4; i++)
     {
         vector<vector<int>> new_map = map_;
         
-        bool result = move(Direction(i), new_map);
-        if (result == true)
+        MoveResult result = move(Direction(i), new_map);
+        if (result == MOVE_SUCCESS)
         {
-            // add id
-            global_config_->addId();
-
-            Node *new_node = new Node(layer_ + 1, global_config_, open_table_, close_table_);
-            new_node->setMap(dimension_, new_map, goal_, Direction(i));
-            new_node->setParentNode(this);
-            child_node_.push_back(new_node);
-
-            // add new_node in open_set
-            (*open_table_)[global_config_->getNowId()] = new_node;
-
-            // remove current node from open_set and put it to close_table
-            map<int, Node*>::iterator iter = open_table_->begin();
-            for (; iter != open_table_->end(); iter++)
+            Node *new_node = createChildNode(new_map, Direction(i));
+            if (new_node)
             {
-                if (iter->first == id_)
+                // add new_node in open_set
+                (*open_table_)[global_config_->getNowId()] = new_node;
+
+                // remove current node from open_set and put it to close_table
+                map<int, Node*>::iterator iter = open_table_->begin();
+                for (; iter != open_table_->end(); iter++)
                 {
-                    close_table_->push_back(iter->second);
-                    open_table_->erase(iter);
-                    break;
+                    if (iter->first == id_)
+                    {
+                        close_table_->push_back(iter->second);
+                        open_table_->erase(iter);
+                        break;
+                    }
+                }
+
+                // if match finish find
+                if (new_node->getH() == 0)
+                {
+                    printf ("ok!\n");
+                    return 0;
                 }
             }
-
-            // if match finish find
-            if (new_node->getH() == 0)
+            else
             {
-                printf ("ok!\n");
-                return 0;
+                failed_times++;
+            }
+        }
+        else
+        {
+            failed_times++;
+        }
+    }
+
+    if (failed_times == 4)
+    {
+        if (open_table_->size() <= 1)
+            return -2;
+            
+        map<int, Node*>::iterator iter = open_table_->begin();
+        for (; iter != open_table_->end(); iter++)
+        {
+            if (iter->first == id_)
+            {
+                close_table_->push_back(iter->second);
+                open_table_->erase(iter);
+                break;
             }
         }
     }
@@ -134,11 +156,11 @@ void Node::setParentNode(Node* parent_node)
     parent_node_ = parent_node;
 }
 
-bool Node::move(Direction direction, vector<vector<int>>& map)
+MoveResult Node::move(Direction direction, vector<vector<int>>& new_map)
 {
     if (direction == forbid_direction_)
     {
-        return false;
+        return MOVE_FAILED;
     }
 
     switch (direction)
@@ -146,51 +168,56 @@ bool Node::move(Direction direction, vector<vector<int>>& map)
         case move_up:
         {
             if (now_point_->y - 1 < 0)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y-1][now_point_->x];
-            map[now_point_->y-1][now_point_->x] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y-1][now_point_->x];
+            new_map[now_point_->y-1][now_point_->x] = 0;
 
-            return true;
+            break;
         }
             
         
         case move_down:
         {
             if (now_point_->y + 1 >= dimension_)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y+1][now_point_->x];
-            map[now_point_->y+1][now_point_->x] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y+1][now_point_->x];
+            new_map[now_point_->y+1][now_point_->x] = 0;
 
-            return true;
+            break;
         }
         
         case move_left:
         {
             if (now_point_->x - 1 < 0)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x - 1];
-            map[now_point_->y][now_point_->x - 1] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x - 1];
+            new_map[now_point_->y][now_point_->x - 1] = 0;
 
-            return true;
+            break;
         }
 
         case move_right:
         {
             if (now_point_->x + 1 >= dimension_)
-                return false;
+                return MOVE_FAILED;
 
-            map[now_point_->y][now_point_->x] = map[now_point_->y][now_point_->x + 1];
-            map[now_point_->y][now_point_->x + 1] = 0;
+            new_map[now_point_->y][now_point_->x] = new_map[now_point_->y][now_point_->x + 1];
+            new_map[now_point_->y][now_point_->x + 1] = 0;
 
-            return true;
+            break;
         }
         
         default:
-            return false;
+            return MOVE_FAILED;
     }
+
+    if (global_config_->calculateH(new_map) > h_)
+        return H_BYOUND;
+
+    return MOVE_SUCCESS;
 }
 
 int Node::getH()
@@ -236,7 +263,7 @@ void Node::setF()
 Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)
 {
     // check if same with open or close table's member
-    /*
+    
     map<int, Node*>::iterator iter = open_table_->begin();
     for (; iter != open_table_->end(); iter++)
     {
@@ -276,7 +303,8 @@ Node* Node::createChildNode(vector<vector<int>> new_map, Direction direction)
         if (not_same_num == 0)
             return NULL;
     }
-    */
+    
+
     // add id
     global_config_->addId();
 

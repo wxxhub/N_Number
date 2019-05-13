@@ -16,9 +16,9 @@ int main()
 
     while (n_digital->findNext() != 0)
     {
-        // n_digital->checkCloseTable();
+        n_digital->checkCloseTable();
     }
-    // n_digital->checkCloseTable();
+    n_digital->checkCloseTable();
 
     return 0;
 }

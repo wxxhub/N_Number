@@ -20,6 +20,9 @@ NDigital::~NDigital()
 
 int NDigital::findNext()
 {
+    if (open_table_->size() <=0 )
+        return -2;
+
     // choice next node
     map<int, Node*>::iterator iter = open_table_->begin();
     int index = -1;
@@ -46,7 +49,15 @@ int NDigital::findNext()
 
     // process min_f node
     // printf ("index: %d\n", index);
-    int result = (*open_table_)[index]->process();
+    int result = result = (*open_table_)[index]->process();
+
+    if (result == -2)
+        return result;
+
+    if (open_table_->size() == 0)
+    {
+        return -2;
+    }
     
     updateResult();
 
@@ -125,39 +136,46 @@ void NDigital::setResultNode()
 void NDigital::updateResult()
 {
     // update open_table_tips
-    open_table_tips_.clear();
-    open_table_tips_.resize(open_table_->size());
-    vector<bool> if_set(open_table_->size(), false);
-    for (int i = 0; i < open_table_->size(); i++)
+    if (open_table_->size() > 0)
     {
-        map<int, Node*>::iterator iter = open_table_->begin();
-        TableTips new_table_tips = {0, 0, 0};
-        int min_site = 0;
-        for (int j = 0; iter != open_table_->end(); iter++, j++)
+        open_table_tips_.clear();
+        open_table_tips_.resize(open_table_->size());
+        vector<bool> if_set(open_table_->size(), false);
+        for (int i = 0; i < open_table_->size(); i++)
         {
-            if (if_set[j] == false)
+            map<int, Node*>::iterator iter = open_table_->begin();
+            TableTips new_table_tips = {0, 0, 0};
+            int min_site = 0;
+            for (int j = 0; iter != open_table_->end(); iter++, j++)
             {
-                if (new_table_tips.value == 0)
+                if (if_set[j] == false)
                 {
-                    new_table_tips.id = iter->second->getId();
-                    new_table_tips.layer = iter->second->getLayer();
-                    new_table_tips.value = iter->second->getF();
-                    min_site = j;
-                }
-                else if(new_table_tips.value >= iter->second->getF())
-                {
-                    new_table_tips.id = iter->second->getId();
-                    new_table_tips.layer = iter->second->getLayer();
-                    new_table_tips.value = iter->second->getF();
-                    min_site = j;
+                    if (new_table_tips.value == 0)
+                    {
+                        new_table_tips.id = iter->second->getId();
+                        new_table_tips.layer = iter->second->getLayer();
+                        new_table_tips.value = iter->second->getF();
+                        min_site = j;
+                    }
+                    else if(new_table_tips.value >= iter->second->getF())
+                    {
+                        new_table_tips.id = iter->second->getId();
+                        new_table_tips.layer = iter->second->getLayer();
+                        new_table_tips.value = iter->second->getF();
+                        min_site = j;
+                    }
                 }
             }
+
+            if_set[min_site] = true;
+            open_table_tips_[i] = new_table_tips;
         }
 
-        if_set[min_site] = true;
-        open_table_tips_[i] = new_table_tips;
+        // update min_open_map
+        vector<vector<int>> min_open_map = (*open_table_)[open_table_tips_[0].id]->getMap();
+        min_open_map_.assign(min_open_map.begin(), min_open_map.end());
     }
-
+    
     // update close_table_tips
     close_table_tips_.clear();
     close_table_tips_.resize(close_table_->size());
@@ -168,10 +186,6 @@ void NDigital::updateResult()
         close_table_tips_[i].layer = (*close_table_)[i]->getLayer();
         close_table_tips_[i].value = (*close_table_)[i]->getF();
     }
-
-    // update
-    vector<vector<int>> min_open_map = (*open_table_)[open_table_tips_[0].id]->getMap();
-    min_open_map_.assign(min_open_map.begin(), min_open_map.end());
 }
 
 void NDigital::cleanr()
@@ -328,6 +342,11 @@ vector<vector<int>> NDigital::getMinOpeneMap()
 std::vector<std::vector<int>>  NDigital::getResultMap(int id)
 {
     return result_table_[id]->getMap();
+}
+
+int NDigital::getOpencloseSize()
+{
+    return open_table_->size();
 }
 
 vector<TableTips> NDigital::getOpenTableTips()

@@ -172,7 +172,17 @@ QLabel* MainWindow::newLable(int num)
 
 void MainWindow::on_Process_clicked()
 {
-    while (n_digital_->findNext() != 0);
+    int result = 1;
+    while (result != 0)
+    {
+        result = n_digital_->findNext();
+        if (result == -2)
+        {
+            setProcessButton(false);
+            QMessageBox::information(this,"提示","无解");
+            return;
+        }
+    }
     updateTable();
     updateMap();
     endProcess();
@@ -181,6 +191,13 @@ void MainWindow::on_Process_clicked()
 void MainWindow::on_ProcessOnce_clicked()
 {
     int result = n_digital_->findNext();
+    if (result == -2)
+    {
+        setProcessButton(false);
+        QMessageBox::information(this,"提示","无解");
+        return;
+    }
+
     updateTable();
     updateMap();
     if (result == 0)
