@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->SelectDimesion->setSingleStep(7);
     ui->SelectDimesion->setRange(8, 15);
 
-    ui->SelectHFunction->setSuffix("F");
+    ui->SelectHFunction->setSuffix("H");
     ui->SelectHFunction->setSingleStep(1);
     ui->SelectHFunction->setRange(0, 1);
 
