@@ -94,7 +94,7 @@
     </property>
     <layout class="QGridLayout" name="OrigionNode"/>
    </widget>
-   <widget class="QLabel" name="label">
+   <widget class="QLabel" name="OpenTableLabel">
     <property name="geometry">
      <rect>
       <x>370</x>
@@ -107,7 +107,7 @@
      <string>Open Table:</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_2">
+   <widget class="QLabel" name="CloseTableLabel">
     <property name="geometry">
      <rect>
       <x>660</x>
@@ -335,7 +335,7 @@ p, li { white-space: pre-wrap; }
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QLabel" name="label_8">
+   <widget class="QLabel" name="ResultInfoLabel">
     <property name="geometry">
      <rect>
       <x>10</x>

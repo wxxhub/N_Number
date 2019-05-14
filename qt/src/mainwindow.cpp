@@ -288,6 +288,8 @@ void MainWindow::updateTable()
         QMessageBox::information(this,"提示","无解");
     }
 
+    ui->OpenTableLabel->setText("Open Table: "+QString::number(open_tips.size()));
+    ui->CloseTableLabel->setText("Close Table: "+QString::number(close_tips.size()));
 
     // update open table
     for (int i = 0; i < open_tips.size(); i++)
@@ -337,6 +339,7 @@ void MainWindow::updateResultTable()
     //get map
     std::vector<TableTips> result_tips = n_digital_->getResultTableTips();
 
+    ui->ResultInfoLabel->setText("Result Infomation: "+QString::number(result_tips.size()));
     //update result table
     for (int i = 0; i < result_tips.size(); i++)
     {
