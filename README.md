@@ -4,9 +4,9 @@
 > A*算法流程:  
 > 1. 把S放入Open Table, 记f=h, 令Close表为空表  
 > 2. 若Open Table为空表, 则宣告失败  
-> 3. 选取Open Table中f最小的节点为Best Node, 放入> Close表中  
+> 3. 选取Open Table中f最小的节点为Best Node, 放入Close表中  
 > 4. 若Best Node为目标节点, 则成功求解  
-> 5. 若Best Node不为目标节点, 则扩展产生后续节点> Successor  
+> 5. 若Best Node不为目标节点, 则扩展产生后续节点  Successor  
 > 6. 对每个Successor进行下列过程:  
 >    a. 建立从Successor返回Best Node的指针  
 >    b. 计算f(Successor)  
