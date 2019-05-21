@@ -236,8 +236,8 @@ MoveResult Node::move(Direction direction, vector<vector<int>>& new_map)
             return MOVE_FAILED;
     }
 
-    if (global_config_->calculateH(new_map) > h_)
-        return H_BYOUND;
+    // if (global_config_->calculateH(new_map) > h_)
+    //     return H_BYOUND;
 
     return MOVE_SUCCESS;
 }
